@@ -1,7 +1,9 @@
 .project
 .classpath
 .settings
+.DS_STORE
 /target/
 /bin/
+/out/
 .directory
 /.idea/
