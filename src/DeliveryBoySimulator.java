@@ -2,7 +2,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DeliveryBoySimulator {
-    private Double time = 0.00;
+    private Double time = 0.0;
     private List<Event> events = new ArrayList<Event>();
     private Integer acum = 0;
     private Integer ns = 0;
@@ -12,8 +12,8 @@ public class DeliveryBoySimulator {
     private FdpTA ta;
     private FdpIA ia;
     private double iTo = 0.0;
-    //    private boolean estasOcioso=false;
     private double contadorOcioso;
+    boolean primeraVez;
 
     public DeliveryBoySimulator(Integer deliveryBoys, Integer tamanioPaquete, Double finalTime, FdpTA ta, FdpIA ia) {
         this.deliveryBoys = deliveryBoys;
@@ -27,17 +27,20 @@ public class DeliveryBoySimulator {
 
         //empiezo con una llegada
         events.add(new Event(EventType.LLEGADA, ia.get()));
-
+        primeraVez = true;
         while (time <= finalTime) {
             //get del proximo evento mas cercano en el tiempo
             Event evt = pullNextEvent();
             //actualizo variable tiempo
             time = evt.getTime();
-
             //SI ES LLEGADA
             if (evt.sosDeLlegada()) {
                 // acumulo en el paquete
                 acum++;
+                if (primeraVez && ns == deliveryBoys) {
+                    iTo = iTo + time;
+                    primeraVez = false;
+                }
                 // evento no condicionado = GENERO NUEVA LLEGADA
                 events.add(new Event(EventType.LLEGADA, time + ia.get()));
                 // si hay un paquete lleno, lo agrego al sistema
@@ -66,6 +69,7 @@ public class DeliveryBoySimulator {
                     //COMIENZA TIEMPO OCIOSO?
                 }
             }
+
         }
         System.out.println("Tiempo ocioso: " + iTo + " segundos.");
 
