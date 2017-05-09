@@ -11,9 +11,11 @@ public class DeliveryBoySimulator {
     private Double finalTime;
     private FdpTA ta;
     private FdpIA ia;
-    private double iTo = 0.0;
-    private double contadorOcioso;
+    private double sto = 0.0;
+    private double ito;
     boolean primeraVez;
+    boolean tiempoOcioso;
+    boolean todoOcioso;
 
     public DeliveryBoySimulator(Integer deliveryBoys, Integer tamanioPaquete, Double finalTime, FdpTA ta, FdpIA ia) {
         this.deliveryBoys = deliveryBoys;
@@ -27,8 +29,10 @@ public class DeliveryBoySimulator {
 
         //empiezo con una llegada
         events.add(new Event(EventType.LLEGADA, ia.get()));
-        primeraVez = true;
-        while (time <= finalTime) {
+        //primeraVez = true;
+        tiempoOcioso = true;
+        todoOcioso = true;
+        while (events.size()>0) {
             //get del proximo evento mas cercano en el tiempo
             Event evt = pullNextEvent();
             //actualizo variable tiempo
@@ -37,12 +41,11 @@ public class DeliveryBoySimulator {
             if (evt.sosDeLlegada()) {
                 // acumulo en el paquete
                 acum++;
-                if (primeraVez && ns == deliveryBoys) {
-                    iTo = iTo + time;
-                    primeraVez = false;
-                }
                 // evento no condicionado = GENERO NUEVA LLEGADA
-                events.add(new Event(EventType.LLEGADA, time + ia.get()));
+                double tpll = time + ia.get();
+                if(tpll<finalTime){
+                    events.add(new Event(EventType.LLEGADA,tpll ));
+                }
                 // si hay un paquete lleno, lo agrego al sistema
                 if (acum >= tamanioPaquete) {
                     ns++;
@@ -50,11 +53,6 @@ public class DeliveryBoySimulator {
                     //si hay delivery boys disponibles, lo antiende
                     if (ns <= deliveryBoys) {
                         events.add(new Event(EventType.SALIDA, time + ta.get()));
-                        if (contadorOcioso > 0) {
-                            iTo = iTo + (time - contadorOcioso);
-                            contadorOcioso = 0;
-                        }
-                        //FIN DE TIEMPO OCIOSO? SUMARIZAR?
                     }
                 }
                 // SI ES SALIDA
@@ -64,14 +62,29 @@ public class DeliveryBoySimulator {
                 // Si hay paquetes esperando, genero otra salida para el delivery boy que acaba de entregar
                 if (ns >= deliveryBoys) {
                     events.add(new Event(EventType.SALIDA, time + ta.get()));
-                } else {
-                    contadorOcioso = time;
-                    //COMIENZA TIEMPO OCIOSO?
                 }
             }
 
+            // System.out.println("ns"+ns);
+            if(!tiempoOcioso && ns<deliveryBoys){
+                tiempoOcioso = true;
+                ito = time;
+            }
+            if(tiempoOcioso && ns>=deliveryBoys){
+                tiempoOcioso = false;
+                todoOcioso = false;
+                sto = sto + (time - ito);
+            }
+
         }
-        System.out.println("Tiempo ocioso: " + iTo + " segundos.");
+
+        if(todoOcioso){
+            sto = finalTime;
+        }else if (tiempoOcioso && time<finalTime){
+            sto = sto + (finalTime - ito);
+        }
+
+        System.out.println("Tiempo ocioso: " + sto + " minutos.");
 
     }
 
