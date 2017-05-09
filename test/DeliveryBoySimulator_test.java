@@ -3,7 +3,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DeliveryBoySimulator_test {
-    static private final Logger log = LoggerFactory.getLogger(Event.class);
+    static private final Logger log = LoggerFactory.getLogger(DeliveryBoySimulator.class);
 
 
 
